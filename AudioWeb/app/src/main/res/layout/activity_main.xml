@@ -17,6 +17,16 @@
             android:scrollbars="none"
             tools:listitem="@layout/list_item_web_page" />
 
+        <ProgressBar
+            android:id="@+id/progress_circular"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -25,8 +35,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:fabSize="normal"
         android:contentDescription="Voice Search"
-        app:srcCompat="@drawable/ic_round_keyboard_voice_24"/>
+        app:fabSize="normal"
+        app:srcCompat="@drawable/ic_round_keyboard_voice_24" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

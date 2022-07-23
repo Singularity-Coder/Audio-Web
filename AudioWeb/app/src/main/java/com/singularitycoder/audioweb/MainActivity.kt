@@ -1,5 +1,6 @@
 package com.singularitycoder.audioweb
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -9,16 +10,17 @@ import android.speech.tts.UtteranceProgressListener
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.*
 import com.singularitycoder.audioweb.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
 import java.util.*
 
+// https://jsoup.org/cookbook/extracting-data/selector-syntax
+// https://stackoverflow.com/questions/12526979/jsoup-get-all-links-from-a-page
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -31,23 +33,8 @@ class MainActivity : AppCompatActivity() {
         val data: Intent? = result.data
         val text = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
         println("Voice result: ${text?.firstOrNull()?.replace(" ", "+")}")
-        // Start Worker
-        CoroutineScope(IO).launch {
-            try {
-                // recursively call 3 times for each site
-                // If body length more than 150 chars in 3rd iteration then add that to the list
-                // 100 results in the list - maintain background worker to keep iterating until list size is 100
-                val url = "https://www.google.com/search?q=${text?.firstOrNull()?.replace(" ", "+")}"
-                val document = Jsoup.connect(url).timeout(5000).get()
-                val linkList = document.select("a[href]")
-                linkList.forEach { it: Element? ->
-//                    println("a= " + it?.attr("abs:href"))
-                    if (it?.text()?.contains("https://")?.not() == true) return@forEach
-                    println("linkssss:" + it?.text().toString().substringAfterLast("http").substringBeforeLast(" "))
-                }
-            } catch (e: Exception) {
-            }
-        }
+        val url = "https://www.google.com/search?q=${text?.firstOrNull()?.replace(" ", "+")}"
+        parseWebPageWithWorker(firstUrl = url)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -115,4 +102,58 @@ class MainActivity : AppCompatActivity() {
             playSilentUtterance(1, TextToSpeech.QUEUE_ADD, utteranceId) // Stay silent for 1 ms
         }
     }
+
+    @SuppressLint("RestrictedApi")
+    private fun parseWebPageWithWorker(firstUrl: String) {
+        println("Worker Input: firstUrl: $firstUrl")
+        val workConstraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+        val data = Data.Builder().apply {
+            putString(FIRST_URL, firstUrl)
+        }.build()
+        val webPageParsingWorkRequest = OneTimeWorkRequestBuilder<WebPageParsingWorker>()
+            .setInputData(data)
+            .setConstraints(workConstraints)
+            .build()
+        WorkManager.getInstance(this).enqueueUniqueWork(WORKER_TAG_WEB_PAGE_PARSER, ExistingWorkPolicy.KEEP, webPageParsingWorkRequest)
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(webPageParsingWorkRequest.id).observe(this) { workInfo: WorkInfo? ->
+            when (workInfo?.state) {
+                WorkInfo.State.RUNNING -> {
+                    println("RUNNING: show Progress")
+                    binding.progressCircular.isVisible = true
+                }
+                WorkInfo.State.ENQUEUED -> println("ENQUEUED: show Progress")
+                WorkInfo.State.SUCCEEDED -> {
+                    println("SUCCEEDED: showing Progress")
+                    val imageUrlArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_IMAGE_URL_ARRAY)
+                    val titleArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_TITLE_ARRAY)
+                    val pageUrlArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_PAGE_URL_ARRAY)
+                    val descArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_DESC_ARRAY)
+                    if ((imageUrlArrayFromWorker?.size ?: 0) > 100) {
+                        WorkManager.getInstance(this).cancelAllWorkByTag(WORKER_TAG_WEB_PAGE_PARSER)
+                    }
+                    binding.progressCircular.isVisible = false
+                }
+                WorkInfo.State.FAILED -> {
+                    println("FAILED: stop showing Progress")
+                    binding.root.showSnackBar("Something went wrong!")
+                    binding.progressCircular.isVisible = false
+                }
+                WorkInfo.State.BLOCKED -> println("BLOCKED: show Progress")
+                WorkInfo.State.CANCELLED -> {
+                    println("CANCELLED: stop showing Progress")
+                    binding.progressCircular.isVisible = false
+                }
+                else -> Unit
+            }
+        }
+    }
 }
+
+private const val WORKER_TAG_WEB_PAGE_PARSER = "WORKER_TAG_WEB_PAGE_PARSER"
+
+const val FIRST_URL = "FIRST_URL"
+
+const val KEY_WEB_PAGE_IMAGE_URL_ARRAY = "KEY_WEB_PAGE_IMAGE_URL_ARRAY"
+const val KEY_WEB_PAGE_TITLE_ARRAY = "KEY_WEB_PAGE_TITLE_ARRAY"
+const val KEY_WEB_PAGE_PAGE_URL_ARRAY = "KEY_WEB_PAGE_PAGE_URL_ARRAY"
+const val KEY_WEB_PAGE_DESC_ARRAY = "KEY_WEB_PAGE_DESC_ARRAY"

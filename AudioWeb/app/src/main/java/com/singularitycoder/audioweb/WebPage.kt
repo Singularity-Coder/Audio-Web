@@ -1,7 +1,7 @@
 package com.singularitycoder.audioweb
 
 data class WebPage(
-    val image: String,
+    val imageUrl: String,
     val title: String,
     val link: String,
     val description: String,

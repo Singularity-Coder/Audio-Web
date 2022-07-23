@@ -9,10 +9,14 @@ import android.speech.tts.UtteranceProgressListener
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.audioweb.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -26,7 +30,24 @@ class MainActivity : AppCompatActivity() {
         if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
         val data: Intent? = result.data
         val text = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-//        binding.customSearch.getSearchView().setText(text?.firstOrNull())
+        println("Voice result: ${text?.firstOrNull()?.replace(" ", "+")}")
+        // Start Worker
+        CoroutineScope(IO).launch {
+            try {
+                // recursively call 3 times for each site
+                // If body length more than 150 chars in 3rd iteration then add that to the list
+                // 100 results in the list - maintain background worker to keep iterating until list size is 100
+                val url = "https://www.google.com/search?q=${text?.firstOrNull()?.replace(" ", "+")}"
+                val document = Jsoup.connect(url).timeout(5000).get()
+                val linkList = document.select("a[href]")
+                linkList.forEach { it: Element? ->
+//                    println("a= " + it?.attr("abs:href"))
+                    if (it?.text()?.contains("https://")?.not() == true) return@forEach
+                    println("linkssss:" + it?.text().toString().substringAfterLast("http").substringBeforeLast(" "))
+                }
+            } catch (e: Exception) {
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +64,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun ActivityMainBinding.setupUI() {
+        rvWebPages.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = WebPageAdapter()
+        }
+        (rvWebPages.adapter as WebPageAdapter).setWebPageClickListener { it: WebPage ->
+            startTextToSpeech(it.description)
+        }
         fabVoiceSearch.setOnClickListener {
             // Start Speech to Text
             val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -72,16 +100,16 @@ class MainActivity : AppCompatActivity() {
                 CoroutineScope(Dispatchers.Main).launch { binding.root.showSnackBar("Finished reading $utteranceId") }
             }
 
+            @Deprecated("Deprecated in Java")
             override fun onError(utteranceId: String) {
                 CoroutineScope(Dispatchers.Main).launch { binding.root.showSnackBar("Error reading $utteranceId") }
             }
         })
     }
 
-    private fun startTextToSpeech() {
+    private fun startTextToSpeech(textToSpeak: String) {
         val utteranceId = getString(R.string.app_name)
         val params = Bundle().apply { putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId) }
-        val textToSpeak = "get some website description here"
         textToSpeech?.apply {
             speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
             playSilentUtterance(1, TextToSpeech.QUEUE_ADD, utteranceId) // Stay silent for 1 ms

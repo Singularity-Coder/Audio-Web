@@ -71,10 +71,9 @@ class MainActivity : AppCompatActivity() {
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
                 putExtra(RecognizerIntent.EXTRA_PROMPT, "Start Speaking Now!")
             }
-            // TODO undo this
-//            speechToTextResult.launch(intent)
-            val url = "https://www.google.com/search?q=news"
-            parseWebPageWithWorker(firstUrl = url)
+            speechToTextResult.launch(intent)
+//            val url = "https://www.google.com/search?q=news"
+//            parseWebPageWithWorker(firstUrl = url)
         }
         dao.getLatestWebPageLiveData().observe(this@MainActivity) { it: WebPage? ->
             it ?: return@observe

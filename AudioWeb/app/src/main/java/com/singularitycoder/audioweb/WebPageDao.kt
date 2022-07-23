@@ -30,6 +30,9 @@ interface WebPageDao {
     fun getAllWebPageListLiveData(): LiveData<List<WebPage>>
 
     @Query("SELECT * FROM $TABLE_WEB_PAGE")
+    fun getLatestWebPageLiveData(): LiveData<WebPage>
+
+    @Query("SELECT * FROM $TABLE_WEB_PAGE")
     suspend fun getAll(): List<WebPage>
 
     @Query("DELETE FROM $TABLE_WEB_PAGE")

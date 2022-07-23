@@ -15,16 +15,19 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.*
 import com.singularitycoder.audioweb.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.collections.ArrayList
+import javax.inject.Inject
 
 // https://jsoup.org/cookbook/extracting-data/selector-syntax
 // https://stackoverflow.com/questions/12526979/jsoup-get-all-links-from-a-page
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var dao: WebPageDao
 
     private lateinit var binding: ActivityMainBinding
 
@@ -68,9 +71,17 @@ class MainActivity : AppCompatActivity() {
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
                 putExtra(RecognizerIntent.EXTRA_PROMPT, "Start Speaking Now!")
             }
-            speechToTextResult.launch(intent)
-//            val url = "https://www.google.com/search?q=news"
-//            parseWebPageWithWorker(firstUrl = url)
+            // TODO undo this
+//            speechToTextResult.launch(intent)
+            val url = "https://www.google.com/search?q=news"
+            parseWebPageWithWorker(firstUrl = url)
+        }
+        dao.getLatestWebPageLiveData().observe(this@MainActivity) { it: WebPage? ->
+            it ?: return@observe
+            (binding.rvWebPages.adapter as WebPageAdapter).apply {
+                this.webPageList.add(it)
+                notifyItemInserted(this.webPageList.lastIndex)
+            }
         }
     }
 
@@ -129,35 +140,11 @@ class MainActivity : AppCompatActivity() {
                 WorkInfo.State.ENQUEUED -> println("ENQUEUED: show Progress")
                 WorkInfo.State.SUCCEEDED -> {
                     println("SUCCEEDED: showing Progress")
-                    val imageUrlArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_IMAGE_URL_ARRAY)
-                    val titleArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_TITLE_ARRAY)
-                    val pageUrlArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_PAGE_URL_ARRAY)
-                    val descArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_DESC_ARRAY)
-
-                    val webPageList = ArrayList<WebPage>()
-                    CoroutineScope(IO).launch {
-                        imageUrlArrayFromWorker?.forEachIndexed { index, s ->
-                            webPageList.add(
-                                WebPage(
-                                    imageUrl = imageUrlArrayFromWorker.get(index),
-                                    title = titleArrayFromWorker?.get(index) ?: "",
-                                    pageUrl = pageUrlArrayFromWorker?.get(index) ?: "",
-                                    description = descArrayFromWorker?.get(index) ?: ""
-                                )
-                            )
-                        }
-
-                        withContext(Main) {
-                            (binding.rvWebPages.adapter as WebPageAdapter).apply {
-                                this.webPageList = webPageList
-                                notifyDataSetChanged()
-                            }
-                            if (webPageList.size > 100) {
-                                WorkManager.getInstance(this@MainActivity).cancelAllWorkByTag(WORKER_TAG_WEB_PAGE_PARSER)
-                            }
-                            binding.progressCircular.isVisible = false
-                        }
+                    val isWorkComplete = workInfo.outputData.getBoolean(KEY_IS_WORK_COMPLETE, false)
+                    if ((binding.rvWebPages.adapter as WebPageAdapter).webPageList.size > 100) {
+                        WorkManager.getInstance(this@MainActivity).cancelAllWorkByTag(WORKER_TAG_WEB_PAGE_PARSER)
                     }
+                    binding.progressCircular.isVisible = false
                 }
                 WorkInfo.State.FAILED -> {
                     println("FAILED: stop showing Progress")

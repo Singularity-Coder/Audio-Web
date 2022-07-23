@@ -14,10 +14,11 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.*
 import com.singularitycoder.audioweb.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 import java.util.*
+import kotlin.collections.ArrayList
 
 // https://jsoup.org/cookbook/extracting-data/selector-syntax
 // https://stackoverflow.com/questions/12526979/jsoup-get-all-links-from-a-page
@@ -128,10 +129,31 @@ class MainActivity : AppCompatActivity() {
                     val titleArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_TITLE_ARRAY)
                     val pageUrlArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_PAGE_URL_ARRAY)
                     val descArrayFromWorker = workInfo.outputData.getStringArray(KEY_WEB_PAGE_DESC_ARRAY)
-                    if ((imageUrlArrayFromWorker?.size ?: 0) > 100) {
-                        WorkManager.getInstance(this).cancelAllWorkByTag(WORKER_TAG_WEB_PAGE_PARSER)
+
+                    val webPageList = ArrayList<WebPage>()
+                    CoroutineScope(IO).launch {
+                        imageUrlArrayFromWorker?.forEachIndexed { index, s ->
+                            webPageList.add(
+                                WebPage(
+                                    imageUrl = imageUrlArrayFromWorker.get(index),
+                                    title = titleArrayFromWorker?.get(index) ?: "",
+                                    pageUrl = pageUrlArrayFromWorker?.get(index) ?: "",
+                                    description = descArrayFromWorker?.get(index) ?: ""
+                                )
+                            )
+                        }
+
+                        withContext(Main) {
+                            (binding.rvWebPages.adapter as WebPageAdapter).apply {
+                                this.webPageList = webPageList
+                                notifyDataSetChanged()
+                            }
+                            if (webPageList.size > 100) {
+                                WorkManager.getInstance(this@MainActivity).cancelAllWorkByTag(WORKER_TAG_WEB_PAGE_PARSER)
+                            }
+                            binding.progressCircular.isVisible = false
+                        }
                     }
-                    binding.progressCircular.isVisible = false
                 }
                 WorkInfo.State.FAILED -> {
                     println("FAILED: stop showing Progress")

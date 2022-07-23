@@ -13,6 +13,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
+const val WORKER_TAG_WEB_PAGE_PARSER = "WORKER_TAG_WEB_PAGE_PARSER"
+
+const val FIRST_URL = "FIRST_URL"
+
+const val DB_AUDIO_WEB = "db_audio_web"
+const val TABLE_WEB_PAGE = "table_web_page"
+
+const val KEY_WEB_PAGE_IMAGE_URL_ARRAY = "KEY_WEB_PAGE_IMAGE_URL_ARRAY"
+const val KEY_WEB_PAGE_TITLE_ARRAY = "KEY_WEB_PAGE_TITLE_ARRAY"
+const val KEY_WEB_PAGE_PAGE_URL_ARRAY = "KEY_WEB_PAGE_PAGE_URL_ARRAY"
+const val KEY_WEB_PAGE_DESC_ARRAY = "KEY_WEB_PAGE_DESC_ARRAY"
+
 fun View.showSnackBar(
     message: String,
     anchorView: View? = null,

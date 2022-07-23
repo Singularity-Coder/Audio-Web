@@ -35,7 +35,7 @@ class WebPageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             itemBinding.apply {
                 tvTitle.text = webPage.title
                 ivImage.load(webPage.imageUrl) {
-                    placeholder(R.color.purple_200)
+                    placeholder(R.drawable.placeholder)
                 }
                 root.setOnClickListener {
                     webPageClickListener.invoke(webPage)

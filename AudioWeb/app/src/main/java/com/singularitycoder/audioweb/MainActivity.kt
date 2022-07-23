@@ -14,6 +14,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.*
 import com.singularitycoder.audioweb.databinding.ActivityMainBinding
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -22,6 +23,7 @@ import kotlin.collections.ArrayList
 
 // https://jsoup.org/cookbook/extracting-data/selector-syntax
 // https://stackoverflow.com/questions/12526979/jsoup-get-all-links-from-a-page
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -57,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             adapter = WebPageAdapter()
         }
         (rvWebPages.adapter as WebPageAdapter).setWebPageClickListener { it: WebPage ->
-            startTextToSpeech(it.description)
+            startTextToSpeech(it)
         }
         fabVoiceSearch.setOnClickListener {
             // Start Speech to Text
@@ -67,6 +69,8 @@ class MainActivity : AppCompatActivity() {
                 putExtra(RecognizerIntent.EXTRA_PROMPT, "Start Speaking Now!")
             }
             speechToTextResult.launch(intent)
+//            val url = "https://www.google.com/search?q=news"
+//            parseWebPageWithWorker(firstUrl = url)
         }
     }
 
@@ -81,26 +85,26 @@ class MainActivity : AppCompatActivity() {
         }
         textToSpeech?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
-                CoroutineScope(Dispatchers.Main).launch { binding.root.showSnackBar("Started reading $utteranceId") }
+                CoroutineScope(Main).launch { binding.root.showSnackBar("Started reading $utteranceId") }
             }
 
             override fun onDone(utteranceId: String) {
-                CoroutineScope(Dispatchers.Main).launch { binding.root.showSnackBar("Finished reading $utteranceId") }
+                CoroutineScope(Main).launch { binding.root.showSnackBar("Finished reading $utteranceId") }
             }
 
             @Deprecated("Deprecated in Java")
             override fun onError(utteranceId: String) {
-                CoroutineScope(Dispatchers.Main).launch { binding.root.showSnackBar("Error reading $utteranceId") }
+                CoroutineScope(Main).launch { binding.root.showSnackBar("Error reading $utteranceId") }
             }
         })
     }
 
-    private fun startTextToSpeech(textToSpeak: String) {
-        val utteranceId = getString(R.string.app_name)
+    private fun startTextToSpeech(textToSpeak: WebPage) {
+        val utteranceId = textToSpeak.title
         val params = Bundle().apply { putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId) }
         textToSpeech?.apply {
-            speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
-            playSilentUtterance(1, TextToSpeech.QUEUE_ADD, utteranceId) // Stay silent for 1 ms
+            speak(textToSpeak.description, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
+            playSilentUtterance(1000, TextToSpeech.QUEUE_ADD, utteranceId) // Stay silent for 1 ms
         }
     }
 
@@ -170,12 +174,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-
-private const val WORKER_TAG_WEB_PAGE_PARSER = "WORKER_TAG_WEB_PAGE_PARSER"
-
-const val FIRST_URL = "FIRST_URL"
-
-const val KEY_WEB_PAGE_IMAGE_URL_ARRAY = "KEY_WEB_PAGE_IMAGE_URL_ARRAY"
-const val KEY_WEB_PAGE_TITLE_ARRAY = "KEY_WEB_PAGE_TITLE_ARRAY"
-const val KEY_WEB_PAGE_PAGE_URL_ARRAY = "KEY_WEB_PAGE_PAGE_URL_ARRAY"
-const val KEY_WEB_PAGE_DESC_ARRAY = "KEY_WEB_PAGE_DESC_ARRAY"

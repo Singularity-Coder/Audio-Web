@@ -30,7 +30,7 @@
                 android:id="@+id/iv_image"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:background="@drawable/placeholder"
+                android:background="@drawable/ic_placeholder"
                 android:scaleType="centerCrop" />
         </com.google.android.material.card.MaterialCardView>
 

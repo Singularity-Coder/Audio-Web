@@ -40,7 +40,7 @@ class WebPageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 }
                 tvTitle.text = webPage.title
                 ivImage.load(webPage.imageUrl) {
-                    placeholder(R.drawable.placeholder)
+                    placeholder(R.drawable.ic_placeholder)
                 }
                 root.setOnClickListener {
                     webPageClickListener.invoke(webPage)

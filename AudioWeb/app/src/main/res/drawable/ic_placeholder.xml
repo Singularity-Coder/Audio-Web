@@ -18,7 +18,7 @@
         android:width="48dp"
         android:height="48dp"
         android:bottom="16dp"
-        android:drawable="@drawable/ic_baseline_headphones_24"
+        android:drawable="@drawable/ic_round_headphones_24"
         android:end="16dp"
         android:gravity="center"
         android:start="16dp"

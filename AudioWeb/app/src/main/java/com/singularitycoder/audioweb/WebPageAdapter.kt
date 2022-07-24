@@ -33,6 +33,11 @@ class WebPageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun setData(webPage: WebPage) {
             itemBinding.apply {
+                if (webPage.pageUrl.contains("https://")) {
+                    tvSource.text = webPage.pageUrl.substringAfterLast("https://").substringAfter(".")
+                } else {
+                    tvSource.text = webPage.pageUrl.substringAfterLast("http://").substringAfter(".")
+                }
                 tvTitle.text = webPage.title
                 ivImage.load(webPage.imageUrl) {
                     placeholder(R.drawable.placeholder)

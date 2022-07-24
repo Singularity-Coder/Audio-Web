@@ -8,39 +8,65 @@
     android:layout_marginEnd="16dp"
     android:layout_marginBottom="14dp"
     app:cardCornerRadius="8dp"
-    app:strokeWidth="1dp"
+    app:cardElevation="0dp"
     app:strokeColor="@color/black_50"
-    app:cardElevation="0dp">
+    app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/iv_image"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:background="@drawable/placeholder"
-            android:scaleType="centerCrop"
+        <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/card_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/iv_image"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/placeholder"
+                android:scaleType="centerCrop" />
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
-            android:id="@+id/tv_title"
-            style="@style/TextAppearance.AppCompat.Body2"
+            android:id="@+id/tv_source"
+            style="@style/TextAppearance.AppCompat.Body1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:ellipsize="end"
-            android:maxLines="3"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:maxLines="1"
+            android:text="Source"
+            android:textColor="@android:color/darker_gray"
+            app:layout_constraintEnd_toStartOf="@+id/iv_play"
+            app:layout_constraintStart_toEndOf="@+id/card_image"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_title"
+            style="@style/TextAppearance.AppCompat.Body1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="16dp"
+            android:ellipsize="end"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:maxLines="2"
             android:text="Title"
             android:textColor="@color/title_color"
             app:layout_constraintEnd_toStartOf="@+id/iv_play"
-            app:layout_constraintStart_toEndOf="@+id/iv_image"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toEndOf="@+id/card_image"
+            app:layout_constraintTop_toBottomOf="@+id/tv_source" />
 
         <ImageView
             android:id="@+id/iv_play"

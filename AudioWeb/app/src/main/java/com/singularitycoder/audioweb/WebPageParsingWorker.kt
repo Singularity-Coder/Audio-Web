@@ -82,6 +82,8 @@ class WebPageParsingWorker(val context: Context, workerParams: WorkerParameters)
                             description += ". " + it?.text().toString()
                         }
 
+                        if (description.replace(".", "").isBlank()) return@urlSet1
+
                         dao.insert(
                             WebPage(
                                 imageUrl = imageElementsList2.firstOrNull()?.text().toString(),

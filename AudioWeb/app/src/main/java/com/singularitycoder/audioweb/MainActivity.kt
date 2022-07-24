@@ -83,10 +83,10 @@ class MainActivity : AppCompatActivity() {
                         putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
                         putExtra(RecognizerIntent.EXTRA_PROMPT, "Start Speaking Now!")
                     }
-                    speechToTextResult.launch(intent)
-//                    val url = "https://www.google.com/search?q=news"
-//                    binding.tvSearchResults.text = "Search results for \"News\""
-//                    parseWebPageWithWorker(firstUrl = url)
+//                    speechToTextResult.launch(intent)
+                    val url = "https://www.google.com/search?q=news"
+                    binding.tvSearchResults.text = "Search results for \"News\""
+                    parseWebPageWithWorker(firstUrl = url)
                 }
             }
         }

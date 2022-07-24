@@ -16,8 +16,10 @@ import androidx.work.*
 import com.singularitycoder.audioweb.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
@@ -38,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
         val data: Intent? = result.data
         val text = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+        binding.tvSearchResults.text = "Search results for \"${text?.firstOrNull()}\""
         println("Voice result: ${text?.firstOrNull()?.replace(" ", "+")}")
         val url = "https://www.google.com/search?q=${text?.firstOrNull()?.replace(" ", "+")}"
         parseWebPageWithWorker(firstUrl = url)
@@ -48,6 +51,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.setupUI()
+    }
+
+    override fun onResume() {
+        super.onResume()
         initTextToSpeech()
     }
 
@@ -57,6 +64,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun ActivityMainBinding.setupUI() {
+        tvSearchResults.text = "Listen to the world!"
         rvWebPages.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = WebPageAdapter()
@@ -65,21 +73,28 @@ class MainActivity : AppCompatActivity() {
             startTextToSpeech(it)
         }
         fabVoiceSearch.setOnClickListener {
-            // Start Speech to Text
-            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-                putExtra(RecognizerIntent.EXTRA_PROMPT, "Start Speaking Now!")
+            CoroutineScope(IO).launch {
+//                (binding.rvWebPages.adapter as WebPageAdapter).webPageList.clear()
+                dao.deleteAll()
+                withContext(Main) {
+                    // Start Speech to Text
+                    val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                        putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+                        putExtra(RecognizerIntent.EXTRA_PROMPT, "Start Speaking Now!")
+                    }
+                    speechToTextResult.launch(intent)
+//                    val url = "https://www.google.com/search?q=news"
+//                    binding.tvSearchResults.text = "Search results for \"News\""
+//                    parseWebPageWithWorker(firstUrl = url)
+                }
             }
-            speechToTextResult.launch(intent)
-//            val url = "https://www.google.com/search?q=news"
-//            parseWebPageWithWorker(firstUrl = url)
         }
         dao.getLatestWebPageLiveData().observe(this@MainActivity) { it: WebPage? ->
             it ?: return@observe
             (binding.rvWebPages.adapter as WebPageAdapter).apply {
                 this.webPageList.add(it)
-                notifyItemInserted(this.webPageList.lastIndex)
+                notifyItemRangeInserted(this.webPageList.lastIndex, this.webPageList.size + 1)
             }
         }
     }

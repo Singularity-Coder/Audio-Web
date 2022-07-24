@@ -8,7 +8,7 @@ import com.singularitycoder.audioweb.databinding.ListItemWebPageBinding
 
 class WebPageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    var webPageList = ArrayList<WebPage>()
+    val webPageList = ArrayList<WebPage>()
     private var webPageClickListener: (webPage: WebPage) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

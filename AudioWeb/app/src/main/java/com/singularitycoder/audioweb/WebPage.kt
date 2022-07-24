@@ -9,5 +9,7 @@ data class WebPage(
     @ColumnInfo(name = "image_url") val imageUrl: String,
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "page_url") val pageUrl: String,
-    @PrimaryKey @ColumnInfo(name = "description") val description: String,
-)
+    @PrimaryKey @ColumnInfo(name = "description") val description: String
+) {
+    constructor() : this("", "", "", "")
+}

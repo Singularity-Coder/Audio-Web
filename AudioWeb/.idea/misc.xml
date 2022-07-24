@@ -5,9 +5,10 @@
       <map>
         <entry key="app/src/main/res/drawable/ic_baseline_play_arrow_24.xml" value="0.1335" />
         <entry key="app/src/main/res/drawable/ic_round_keyboard_voice_24.xml" value="0.1335" />
-        <entry key="app/src/main/res/layout/activity_main.xml" value="0.125" />
+        <entry key="app/src/main/res/drawable/ic_round_play_arrow_24.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.21481481481481482" />
         <entry key="app/src/main/res/layout/layout_search.xml" value="0.3695114135742188" />
-        <entry key="app/src/main/res/layout/list_item_web_page.xml" value="0.39086151123046875" />
+        <entry key="app/src/main/res/layout/list_item_web_page.xml" value="0.5419320153086842" />
       </map>
     </option>
   </component>

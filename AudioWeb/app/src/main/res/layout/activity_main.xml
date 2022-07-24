@@ -10,11 +10,41 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <TextView
+            android:id="@+id/tv_app_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:paddingStart="16dp"
+            android:paddingTop="24dp"
+            android:paddingEnd="16dp"
+            android:text="@string/app_name"
+            android:textAppearance="@style/TextAppearance.Material3.DisplaySmall"
+            android:textColor="@color/title_color"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_search_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="14dp"
+            android:text="Search Results for "
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+            android:textColor="@android:color/darker_gray"
+            app:layout_constraintTop_toBottomOf="@+id/tv_app_name" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_web_pages"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:scrollbars="none"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_search_results"
             tools:listitem="@layout/list_item_web_page" />
 
         <ProgressBar
@@ -37,6 +67,8 @@
         android:layout_margin="16dp"
         android:contentDescription="Voice Search"
         app:fabSize="normal"
-        app:srcCompat="@drawable/ic_round_keyboard_voice_24" />
+        app:backgroundTint="@color/purple_500"
+        app:srcCompat="@drawable/ic_round_keyboard_voice_24"
+        app:tint="@android:color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

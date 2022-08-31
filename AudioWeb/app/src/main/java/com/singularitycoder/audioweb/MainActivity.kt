@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     private val speechToTextResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult? ->
         result ?: return@registerForActivityResult
+        binding.progressCircular.isVisible = true
         if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
         val data: Intent? = result.data
         val text = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
@@ -84,7 +85,6 @@ class MainActivity : AppCompatActivity() {
             startTextToSpeech(it)
         }
         fabVoiceSearch.setOnClickListener {
-            binding.progressCircular.isVisible = true
             CoroutineScope(IO).launch {
                 dao.deleteAll()
                 withContext(Main) {
@@ -110,6 +110,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun testQuery() {
+        binding.progressCircular.isVisible = true
         val url = "https://www.google.com/search?q=news"
         binding.tvSearchResults.text = "Search results for \"News\""
         parseWebPageWithWorker(firstUrl = url)

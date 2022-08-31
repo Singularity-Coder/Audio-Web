@@ -15,6 +15,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 // call 3 times for each site
+// Must go one more level deep
 // If body length more than 150 chars in 3rd iteration then add that to the list
 // 100 results in the list - maintain background worker to keep iterating until list size is 100
 class WebPageParsingWorker(val context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {

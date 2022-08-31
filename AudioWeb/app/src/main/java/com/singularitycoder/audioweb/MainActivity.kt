@@ -135,6 +135,7 @@ class MainActivity : AppCompatActivity() {
             override fun onDone(utteranceId: String) {
                 CoroutineScope(Main).launch {
                     println("Finished reading $utteranceId")
+                    webPageAdapter.notifyDataSetChanged()
                 }
             }
 

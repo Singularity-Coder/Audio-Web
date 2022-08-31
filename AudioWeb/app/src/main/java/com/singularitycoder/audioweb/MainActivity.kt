@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private var textToSpeech: TextToSpeech? = null
+    private val webPageAdapter = WebPageAdapter()
 
     private val speechToTextResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult? ->
         result ?: return@registerForActivityResult
@@ -51,6 +52,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.setupUI()
+        binding.setupUserActionListeners()
+        observeForData()
     }
 
     override fun onResume() {
@@ -67,14 +70,22 @@ class MainActivity : AppCompatActivity() {
         tvSearchResults.text = "Listen to the world!"
         rvWebPages.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = WebPageAdapter()
+            adapter = webPageAdapter
         }
-        (rvWebPages.adapter as WebPageAdapter).setWebPageClickListener { it: WebPage ->
+    }
+
+    private fun ActivityMainBinding.setupUserActionListeners() {
+        root.setOnClickListener {
+            textToSpeech?.stop()
+            webPageAdapter.notifyDataSetChanged()
+        }
+        webPageAdapter.setWebPageClickListener { it: WebPage, isPlaying: Boolean ->
+            textToSpeech?.stop()
             startTextToSpeech(it)
         }
         fabVoiceSearch.setOnClickListener {
+            binding.progressCircular.isVisible = true
             CoroutineScope(IO).launch {
-//                (binding.rvWebPages.adapter as WebPageAdapter).webPageList.clear()
                 dao.deleteAll()
                 withContext(Main) {
                     // Start Speech to Text
@@ -84,19 +95,24 @@ class MainActivity : AppCompatActivity() {
                         putExtra(RecognizerIntent.EXTRA_PROMPT, "Start Speaking Now!")
                     }
                     speechToTextResult.launch(intent)
-//                    val url = "https://www.google.com/search?q=news"
-//                    binding.tvSearchResults.text = "Search results for \"News\""
-//                    parseWebPageWithWorker(firstUrl = url)
+//                    testQuery()
                 }
             }
         }
-        dao.getLatestWebPageLiveData().observe(this@MainActivity) { it: WebPage? ->
+    }
+
+    private fun observeForData() {
+        dao.getAllWebPageListLiveData().observe(this@MainActivity) { it: List<WebPage>? ->
             it ?: return@observe
-            (binding.rvWebPages.adapter as WebPageAdapter).apply {
-                this.webPageList.add(it)
-                notifyItemRangeInserted(this.webPageList.lastIndex, this.webPageList.size + 1)
-            }
+            webPageAdapter.webPageList = it
+            webPageAdapter.notifyDataSetChanged()
         }
+    }
+
+    private fun testQuery() {
+        val url = "https://www.google.com/search?q=news"
+        binding.tvSearchResults.text = "Search results for \"News\""
+        parseWebPageWithWorker(firstUrl = url)
     }
 
     private fun initTextToSpeech() {
@@ -110,16 +126,22 @@ class MainActivity : AppCompatActivity() {
         }
         textToSpeech?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
-                CoroutineScope(Main).launch { binding.root.showSnackBar("Started reading $utteranceId") }
+                CoroutineScope(Main).launch {
+                    println("Started Reading $utteranceId")
+                }
             }
 
             override fun onDone(utteranceId: String) {
-                CoroutineScope(Main).launch { binding.root.showSnackBar("Finished reading $utteranceId") }
+                CoroutineScope(Main).launch {
+                    println("Finished reading $utteranceId")
+                }
             }
 
             @Deprecated("Deprecated in Java")
             override fun onError(utteranceId: String) {
-                CoroutineScope(Main).launch { binding.root.showSnackBar("Error reading $utteranceId") }
+                CoroutineScope(Main).launch {
+                    println("Error reading $utteranceId")
+                }
             }
         })
     }
@@ -155,7 +177,7 @@ class MainActivity : AppCompatActivity() {
                 WorkInfo.State.SUCCEEDED -> {
                     println("SUCCEEDED: showing Progress")
                     val isWorkComplete = workInfo.outputData.getBoolean(KEY_IS_WORK_COMPLETE, false)
-                    if ((binding.rvWebPages.adapter as WebPageAdapter).webPageList.size > 100) {
+                    if (webPageAdapter.webPageList.size > 100) {
                         WorkManager.getInstance(this@MainActivity).cancelAllWorkByTag(WORKER_TAG_WEB_PAGE_PARSER)
                     }
                     binding.progressCircular.isVisible = false

@@ -8,8 +8,9 @@ import com.singularitycoder.audioweb.databinding.ListItemWebPageBinding
 
 class WebPageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    val webPageList = ArrayList<WebPage>()
-    private var webPageClickListener: (webPage: WebPage) -> Unit = {}
+    var webPageList = listOf<WebPage>()
+    private var webPageClickListener: (webPage: WebPage, isPlaying: Boolean) -> Unit = { webPage, isPlaying -> }
+    private var playingPosition = -1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val itemBinding = ListItemWebPageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -24,7 +25,7 @@ class WebPageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemViewType(position: Int): Int = position
 
-    fun setWebPageClickListener(listener: (webPage: WebPage) -> Unit) {
+    fun setWebPageClickListener(listener: (webPage: WebPage, isPlaying: Boolean) -> Unit) {
         webPageClickListener = listener
     }
 
@@ -42,8 +43,14 @@ class WebPageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 ivImage.load(webPage.imageUrl) {
                     placeholder(R.drawable.ic_placeholder)
                 }
+                ivPlay.setImageDrawable(root.context.drawable(R.drawable.ic_round_play_arrow_24))
                 root.setOnClickListener {
-                    webPageClickListener.invoke(webPage)
+                    if (playingPosition != -1 && playingPosition != bindingAdapterPosition) {
+                        notifyItemChanged(playingPosition)
+                    }
+                    playingPosition = bindingAdapterPosition
+                    ivPlay.setImageDrawable(root.context.drawable(R.drawable.ic_round_stop_24))
+                    webPageClickListener.invoke(webPage, true)
                 }
             }
         }

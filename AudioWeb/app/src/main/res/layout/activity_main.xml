@@ -38,6 +38,16 @@
             android:textColor="@android:color/darker_gray"
             app:layout_constraintTop_toBottomOf="@+id/tv_app_name" />
 
+        <ProgressBar
+            android:id="@+id/progress_circular"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="14dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_search_results"
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_web_pages"
             android:layout_width="match_parent"
@@ -46,17 +56,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_search_results"
             tools:listitem="@layout/list_item_web_page" />
-
-        <ProgressBar
-            android:id="@+id/progress_circular"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -66,8 +65,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="Voice Search"
-        app:fabSize="normal"
         app:backgroundTint="@color/purple_500"
+        app:fabSize="normal"
         app:srcCompat="@drawable/ic_round_keyboard_voice_24"
         app:tint="@android:color/white" />
 

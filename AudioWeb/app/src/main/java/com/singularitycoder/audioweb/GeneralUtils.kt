@@ -3,8 +3,12 @@ package com.singularitycoder.audioweb
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Point
+import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.View
+import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
@@ -51,6 +55,12 @@ fun getDeviceSize(): Point = try {
 fun deviceWidth() = Resources.getSystem().displayMetrics.widthPixels
 
 fun deviceHeight() = Resources.getSystem().displayMetrics.heightPixels
+
+fun Context.color(@ColorRes colorRes: Int) = ContextCompat.getColor(this, colorRes)
+
+fun Context.drawable(@DrawableRes drawableRes: Int): Drawable? =
+    ContextCompat.getDrawable(this, drawableRes)
+
 
 fun File?.customPath(directory: String?, fileName: String?): String {
     var path = this?.absolutePath

@@ -23,7 +23,6 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
-// Random comment for udpating the screenshot
 // https://jsoup.org/cookbook/extracting-data/selector-syntax
 // https://stackoverflow.com/questions/12526979/jsoup-get-all-links-from-a-page
 @AndroidEntryPoint
